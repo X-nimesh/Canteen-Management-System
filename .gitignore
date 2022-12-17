@@ -1,0 +1,5 @@
+stepby_guide.md
+terminal_commands.md
+client/node_modules
+server/node_modules
+server/.dev.env
