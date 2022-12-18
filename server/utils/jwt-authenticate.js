@@ -12,6 +12,7 @@ const jwtAutherer = (payload, done) => {
     done(null, payload);
 };
 const jwtAuthenticate = (passport) => {
+
     passport.use(new JwtStrategy(opts, jwtAutherer));
 };
 module.exports = { jwtAuthenticate };

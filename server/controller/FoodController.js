@@ -1,10 +1,23 @@
-const { FoodViewAll, FoodViewOne } = require("../services/FoodService");
+const { FoodViewAll, FoodViewOne, FoodAdd } = require("../services/FoodService");
+const { uploadMiddleware } = require("../utils/fileUpload");
 
-const FoodController = (app, passport) => {
-    app.get("/food", FoodViewAll)
-        .get("/food/:fid", FoodViewOne)
-        .post('/food',
-            passport.authenticate("jwt", { session: false }),
-            FoodAdd)
+const auth = (passport) => {
+    let auth = passport.authenticate("jwt", { session: false });
+    console.log(auth);
 }
+const FoodController = (app, passport) => {
+
+    app.get("/food", FoodViewAll)
+        .get("/food/:fid", FoodViewOne);
+    // passport.authenticate("jwt", { session: false });
+    auth(passport);
+    app.post('/food',
+        passport.authenticate("jwt", { session: false }),
+        uploadMiddleware.single('profilePic'),
+        FoodAdd)
+}
+
 module.exports = FoodController;
+//q: formula for schrodinger equation
+
+

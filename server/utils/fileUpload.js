@@ -11,8 +11,7 @@ const multerDiskStorage = multer.diskStorage({
         // console.log(filetype);
         // cb(null, "newFile.jpg")
         // console.log(file)
-        DBFilename = file.fieldname + '-' + uniqueSuffix + '.' + filetype;
-
+        DBFilename = file.originalname.split(".")[0] + '-' + uniqueSuffix + '.' + filetype;
         cb(null, DBFilename)
     }
 })
@@ -24,9 +23,9 @@ const uploadMiddleware = multer({
         // console.log(req.file);
         console.log(file);
         const mimetype = file.mimetype;
-        if (mimetype !== 'image/png') {
-            cb(new Error("unknown file type"), false);
-        }
+        // if (mimetype !== 'image/png') {
+        //     cb(new Error("unknown file type"), false);
+        // }
         cb(null, true);
     }
 })

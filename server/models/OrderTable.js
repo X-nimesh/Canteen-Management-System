@@ -1,4 +1,5 @@
-import { db } from "../config/db_config";
+const { DataTypes } = require("sequelize");
+const { db } = require("../config/db_config");
 
 const OrderTable = db.define("order_table", {
     orderId: {

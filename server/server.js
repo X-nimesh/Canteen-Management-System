@@ -8,7 +8,7 @@ const notfound = require('./exception/notfound');
 const errorException = require('./exception/error.exception');
 const passport = require("passport");
 // jwt and local strategy
-const { authenticate } = require("./utils/localSrategy.js");
+const { authenticate } = require("./utils/localSrategy");
 const { jwtAuthenticate } = require('./utils/jwt-authenticate');
 
 
