@@ -14,10 +14,6 @@ const OrderTable = db.define("order_table", {
             key: "uid",
         },
     },
-    quantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
     total_price: {
         type: DataTypes.INTEGER,
         allowNull: false,

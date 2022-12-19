@@ -15,10 +15,7 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
-      quantity: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
+
       total_price: {
         type: Sequelize.INTEGER,
         allowNull: false,

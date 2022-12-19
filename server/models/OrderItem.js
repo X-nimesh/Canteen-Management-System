@@ -1,18 +1,19 @@
+const { DataTypes } = require("sequelize");
 const { db } = require("../config/db_config");
 
-const OrderTable = db.define("order_Item_table",
+const OrderItemTable = db.define("order_Item_table",
     {
         orderId: {
             type: DataTypes.INTEGER,
             references: {
-                model: OrderTable,
+                model: "order_table",
                 key: 'orderId'
             }
         },
         Fid: {
             type: DataTypes.INTEGER,
             references: {
-                model: FoodMenu,
+                model: "foodMenu",
                 key: 'Fid'
             }
         },
@@ -23,4 +24,4 @@ const OrderTable = db.define("order_Item_table",
 
     }
     , { freezeTableName: true, timestamps: true });
-module.exports = { OrderTable };
+module.exports = { OrderItemTable };

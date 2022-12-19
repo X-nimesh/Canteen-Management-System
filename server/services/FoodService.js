@@ -1,14 +1,8 @@
 const { FoodMenu } = require('../models/FoodMenu');
-const jwt = require("jsonwebtoken");
+const { auth } = require('../utils/Auth');
 
 require('dotenv').config({ path: './.dev.env' });
-const auth = async (req) => {
-    const token = req.headers.authorization.split(" ")[1];
-    let userDet = jwt.verify(token, process.env.SECRET_KEY);
-    if (!(userDet.role === "employee" || userDet.role === "admin")) {
-        return res.status(401).json({ message: "Unauthorized" });
-    }
-}
+
 exports.FoodViewAll = async (req, res, next) => {
     try {
         const products = await FoodMenu.findAll();
@@ -33,7 +27,9 @@ exports.FoodViewOne = async (req, res, next) => {
 }
 exports.FoodAdd = async (req, res, next) => {
     try {
-        auth(req);
+        if (!auth(req, res)) {
+            return
+        }
         const product = await FoodMenu.create({
             name: req.body.name,
             price: req.body.price,
@@ -47,7 +43,7 @@ exports.FoodAdd = async (req, res, next) => {
 }
 exports.FoodUpdate = async (req, res, next) => {
     try {
-        auth(req);
+        auth(req, res);
         const product = await FoodMenu.update({
             name: req.body.name,
             price: req.body.price,
