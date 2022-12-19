@@ -1,5 +1,6 @@
 const OrderTable = require('../models/OrderTable');
-const OrderItemTable = require('../models/OrderItem');
+const { OrderItemTable } = require('../models/OrderItem');
+const jwt = require("jsonwebtoken");
 
 const { auth } = require('../utils/Auth');
 
@@ -28,31 +29,54 @@ exports.OrderViewbyOid = async (req, res, next) => {
         next(err)
     }
 }
+exports.OrderViewbyUid = async (req, res, next) => {
+    try {
+        let userDet = jwt.verify(req.headers.authorization.split(" ")[1], process.env.SECRET_KEY);
+
+        if (!auth(req, res) || req.params.uid != userDet.uid) {
+            return
+        }
+        const orders = await OrderTable.findAll({
+            where: {
+                uid: req.params.uid
+            }
+        });
+        return res.status(200).json(orders);
+    }
+    catch (err) {
+        next(err)
+    }
+}
+
 exports.OrderAdd = async (req, res, next) => {
     try {
         if (!auth(req, res)) {
             return
         }
-
+        let totalprice = 0;
+        req.body.items.forEach(element => {
+            totalprice += parseInt(element.price * element.quantity);
+            console.log(element.price * element.quantity)
+        });
+        console.log(totalprice);
         let orderReq = {
             uid: req.body.uid,
-            total_price: req.body.total_price,
+            total_price: totalprice,
             status: 'pending'
         }
         const order = await OrderTable.create(orderReq);
 
         let orderItems = req.body.items;
         let orderItemsArr = [];
+
         orderItems.forEach(element => {
             orderItemsArr.push({
-                Fid: element,
+                Fid: element.fid,
                 orderId: order.dataValues.orderId,
                 quantity: element.quantity,
-
             })
         });
-        await OrderItemTable.bulkCreate(orderItemsArr);
-
+        let itemss = await OrderItemTable.bulkCreate(orderItemsArr, { ignoreDuplicates: true });
 
         return res.status(201).json(order);
     }

@@ -4,5 +4,3 @@ client/node_modules
 server/node_modules
 server/.dev.env
 server/uploads
-# how to clear cache in git ignore
-git rm -r --cached .

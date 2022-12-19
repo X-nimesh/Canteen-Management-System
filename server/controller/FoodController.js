@@ -13,7 +13,7 @@ const FoodController = (app, passport) => {
     auth(passport);
     app.post('/food',
         passport.authenticate("jwt", { session: false }),
-        uploadMiddleware.single('profilePic'),
+        uploadMiddleware.single('foodImage'),
         FoodAdd)
 }
 

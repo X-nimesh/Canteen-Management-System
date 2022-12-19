@@ -10,13 +10,14 @@ const passport = require("passport");
 // jwt and local strategy
 const { authenticate } = require("./utils/localSrategy");
 const { jwtAuthenticate } = require('./utils/jwt-authenticate');
+const { socket } = require("./utils/socketNotification.js");
 
 
 require('dotenv').config({ path: './.dev.env' });
 
 const app = express();
 app.use(express.json());
-
+socket(app)
 app.use(passport.initialize());
 authenticate(passport);
 jwtAuthenticate(passport);

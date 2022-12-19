@@ -7,7 +7,7 @@ const OrderTable = db.define("order_table", {
         primaryKey: true,
         autoIncrement: true,
     },
-    user_id: {
+    uid: {
         type: DataTypes.INTEGER,
         references: {
             model: "users_table",
