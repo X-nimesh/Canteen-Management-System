@@ -12,8 +12,10 @@
 const OrderTable = require('../models/OrderTable');
 const { OrderItemTable } = require('../models/OrderItem');
 const jwt = require("jsonwebtoken");
-
 const { auth } = require('../utils/Auth');
+const { db } = require('../config/db_config');
+const { FoodMenu } = require('../models/FoodMenu');
+const { FoodDecrease } = require('../services/FoodService');
 
 exports.OrderViewAll = async (req, res, next) => {
     try {
@@ -60,6 +62,7 @@ exports.OrderViewbyUid = async (req, res, next) => {
 }
 
 exports.OrderAdd = async (req, res, next) => {
+    const t = await db.transaction();
     try {
         if (!auth(req, res)) {
             return
@@ -69,30 +72,38 @@ exports.OrderAdd = async (req, res, next) => {
             totalprice += parseInt(element.price * element.quantity);
             console.log(element.price * element.quantity)
         });
-        console.log(totalprice);
+        // console.log(totalprice);
         let orderReq = {
             uid: req.body.uid,
             total_price: totalprice,
             status: 'pending'
         }
+        console.log("order", orderReq)
         const order = await OrderTable.create(orderReq);
 
         let orderItems = req.body.items;
         let orderItemsArr = [];
 
-        orderItems.forEach(element => {
+        orderItems.forEach(async (element) => {
             orderItemsArr.push({
                 Fid: element.fid,
                 orderId: order.dataValues.orderId,
                 quantity: element.quantity,
             })
+            await FoodDecrease(element.fid)
         });
-        let itemss = await OrderItemTable.bulkCreate(orderItemsArr, { ignoreDuplicates: true });
-
+        console.log("orderItems:", orderItemsArr);
+        // let productRemove =
+        let itemss = await OrderItemTable.bulkCreate(orderItemsArr, { ignoreDuplicates: true }, { transaction: t });
+        await t.commit();
         return res.status(201).json(order);
     }
     catch (err) {
+        await t.rollback();
         next(err)
     }
 
+}
+exports.statusChange = async (req, res, next) => {
+    let { status, oid } = req.body;
 }

@@ -53,7 +53,8 @@ exports.FoodAdd = async (req, res, next) => {
             name: req.body.name,
             price: req.body.price,
             description: req.body.description,
-            image: req.file.filename
+            image: req.file.filename,
+            quantity: req.body.quantity
         });
         return res.status(201).json(product);
     } catch (err) {

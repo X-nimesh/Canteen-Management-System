@@ -6,8 +6,8 @@ const { OrderRoutes } = require("./OrderRoutes");
 
 const Routes = (app, passport) => {
     FoodRoutes(app, passport);
-    // userRoutes(app, passport);
-    // OrderRoutes(app, passport);
+    userRoutes(app, passport);
+    OrderRoutes(app, passport);
     BillRoute(app, passport);
 }
 module.exports = Routes;

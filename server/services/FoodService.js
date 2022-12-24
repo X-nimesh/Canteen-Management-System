@@ -1,0 +1,3 @@
+exports.FoodDecrease = async (Fid) => {
+
+}

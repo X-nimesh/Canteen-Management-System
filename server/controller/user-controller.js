@@ -12,6 +12,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 const userSchema = require('../validator/userValidator');
 const { findAllUser } = require('../services/UserService');
+const userTable = require('../models/UserTable');
 require('dotenv').config({ path: './.dev.env' });
 exports.usergetAll = async (req, res, next) => {
     try {
