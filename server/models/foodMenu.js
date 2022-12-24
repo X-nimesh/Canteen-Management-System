@@ -3,7 +3,7 @@ const { DataTypes } = require("sequelize");
 
 const FoodMenu = db.define("foodMenu",
     {
-        Fid: {
+        Fid: { // better to use fId camelcase avoid using capital letter in start
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,

@@ -2,6 +2,7 @@ const express = require("express");
 const { db } = require("./config/db_config.js");
 const controllers = require("./controller/index-controller.js");
 const { dbConnection } = require("./models/index-model.js");
+//use  transaction in database
 
 // import exceptions
 const notfound = require('./exception/notfound');
@@ -11,6 +12,7 @@ const passport = require("passport");
 const { authenticate } = require("./utils/localSrategy");
 const { jwtAuthenticate } = require('./utils/jwt-authenticate');
 const { socket } = require("./utils/socketNotification.js");
+const Routes = require("./routes/index-Routes.js");
 
 
 require('dotenv').config({ path: './.dev.env' });
@@ -25,9 +27,11 @@ jwtAuthenticate(passport);
 dbConnection(db)
 
 
-// all controllers are here
-controllers(app, passport);
 
+// all controllers are here
+// controllers(app, passport);
+
+Routes(app, passport);
 
 // not found and error exception
 app.use(notfound)
