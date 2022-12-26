@@ -5,5 +5,8 @@ const signup = Joi.object({
     quantity: Joi.number().min(6).max(50).required(),
     status: Joi.string().required().valid("pending", "complete", "cancelled", "rejected", "accepted")
 });
-
-module.exports = { signup };
+const statusChange = Joi.object({
+    status: Joi.string().required().valid("pending", "complete", "cancelled", "rejected", "accepted"),
+    orderId: Joi.number().required()
+});
+module.exports = { signup, statusChange };

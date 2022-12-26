@@ -1,8 +1,8 @@
-const userTable = require("../models/UserTable");
+const { db } = require("../config/db_config");
 
 
 exports.UserLogin = async (email) => {
     // return await userTable.findOne({ where: { email: email } });
-    return await userTable.query(`SELECT NAME,EMAIL,ROLE,UID FROM users_table WHERE email ='${email}'`);
-
+    let data = await db.query(`SELECT NAME,EMAIL,ROLE,UID,PASSWORD FROM users_table WHERE email ='${email}'`);
+    return data[0];
 }

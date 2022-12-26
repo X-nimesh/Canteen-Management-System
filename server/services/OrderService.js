@@ -93,7 +93,7 @@ const { db } = require('../config/db_config');
 const OrderTable = require('../models/OrderTable');
 exports.GetOrderDetails = async (oid) => {
     const orderDetails =
-        await Sequelize.query(`SELECT "orderId",total_price,"createdAt" 
+        await db.query(`SELECT "orderId",total_price,"createdAt" 
             FROM order_table WHERE "orderId"=${oid};`);
     return orderDetails;
 }

@@ -9,8 +9,8 @@ exports.authenticate = (passport) => {
 
             const found = await UserLogin(email);
 
-            if (found && bcrypt.compareSync(password, found.password)) {
-                let data = { uid: found.uid, role: found.role }
+            if (found.length && bcrypt.compareSync(password, found[0].password)) {
+                let data = { uid: found[0].uid, role: found[0].role }
 
                 return cb(null, data, {
                     // return cb(null, found.dataValues.uid, {

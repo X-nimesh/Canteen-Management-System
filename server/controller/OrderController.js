@@ -16,6 +16,7 @@ const { auth } = require('../utils/Auth');
 const { db } = require('../config/db_config');
 const { FoodMenu } = require('../models/FoodMenu');
 const { FoodDecrease } = require('../services/FoodService');
+const Joi = require('joi');
 
 exports.OrderViewAll = async (req, res, next) => {
     try {
@@ -102,8 +103,23 @@ exports.OrderAdd = async (req, res, next) => {
         await t.rollback();
         next(err)
     }
-
 }
 exports.statusChange = async (req, res, next) => {
     let { status, oid } = req.body;
+    if (!auth(req, res)) {
+        return
+    }
+    try {
+        Joi.statusChange.validateAsync({ status, oid });
+
+        const order = await OrderTable.update({ status: status }, {
+            where: {
+                orderId: oid
+            }
+        });
+        res.status(200).json(order);
+    }
+    catch (err) {
+        next(err)
+    }
 }
