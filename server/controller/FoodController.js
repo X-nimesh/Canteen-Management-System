@@ -21,6 +21,7 @@
 const { FoodMenu } = require('../models/FoodMenu');
 const { auth } = require('../utils/Auth');
 
+
 require('dotenv').config({ path: './.dev.env' });
 
 exports.FoodViewAll = async (req, res, next) => {
@@ -46,7 +47,6 @@ exports.FoodViewOne = async (req, res, next) => {
 }
 exports.FoodAdd = async (req, res, next) => {
     try {
-        let authenticate = await auth(req, res);
         if (!auth(req, res)) {
             return
         }

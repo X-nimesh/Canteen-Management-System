@@ -17,7 +17,7 @@ const { db } = require('../config/db_config');
 const { FoodMenu } = require('../models/FoodMenu');
 const { FoodDecrease } = require('../services/FoodService');
 const Joi = require('joi');
-
+const { statusChange } = require('../validator/orderValidator');
 exports.OrderViewAll = async (req, res, next) => {
     try {
         const orders = await OrderTable.findAll();
@@ -47,8 +47,9 @@ exports.OrderViewbyUid = async (req, res, next) => {
     try {
         let userDet = jwt.verify(req.headers.authorization.split(" ")[1], process.env.SECRET_KEY);
 
-        if (!auth(req, res) || req.params.uid != userDet.uid) {
-            return
+        if (!auth(req, res)) {
+            if (req.params.uid != userDet.uid)
+                return res.status(401).json({ message: "Unauthorized" });
         }
         const orders = await OrderTable.findAll({
             where: {
@@ -110,14 +111,17 @@ exports.statusChange = async (req, res, next) => {
         return
     }
     try {
-        Joi.statusChange.validateAsync({ status, oid });
+        await statusChange.validateAsync({ status, oid });
 
         const order = await OrderTable.update({ status: status }, {
             where: {
                 orderId: oid
             }
         });
-        res.status(200).json(order);
+        res.status(200).json({
+            oid: oid,
+            message: "Status Updated"
+        });
     }
     catch (err) {
         next(err)

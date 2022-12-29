@@ -13,13 +13,17 @@ const { authenticate } = require("./utils/localSrategy");
 const { jwtAuthenticate } = require('./utils/jwt-authenticate');
 const { socket } = require("./utils/socketNotification.js");
 const Routes = require("./routes/index-Routes.js");
+// socket.io
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const cors = require('cors');
 
 
 require('dotenv').config({ path: './.dev.env' });
 
 const app = express();
 app.use(express.json());
-socket(app)
+const io = socket(app)
 app.use(passport.initialize());
 authenticate(passport);
 jwtAuthenticate(passport);
@@ -27,9 +31,9 @@ jwtAuthenticate(passport);
 dbConnection(db)
 
 
-
-// all controllers are here
-// controllers(app, passport);
+io.on("connection", (socket) => {
+    socket.emit("join", "hello from server 2");
+});
 
 Routes(app, passport);
 
@@ -37,7 +41,8 @@ Routes(app, passport);
 app.use(notfound)
 app.use(errorException)
 
-
+// httpServer.listen(4000);
+// app.use(cors(corsOptions))
 const PORT = process.env.PORT;
 app.listen(PORT,
     () => console.log(` \n 🎊  Server started on port -> ${PORT}  🎊\n`)

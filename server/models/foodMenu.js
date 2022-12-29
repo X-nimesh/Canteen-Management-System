@@ -20,6 +20,10 @@ const FoodMenu = db.define("foodMenu",
             type: DataTypes.STRING(500),
             allowNull: false,
         },
+        quantity: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
         image: {
             type: DataTypes.STRING,
             allowNull: false,
