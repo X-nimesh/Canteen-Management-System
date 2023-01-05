@@ -1,10 +1,11 @@
-const { FoodViewAll, FoodViewOne, FoodAdd } = require("../controller/FoodController");
+const { FoodViewAll, FoodViewOne, FoodAdd, FoodUpdate } = require("../controller/FoodController");
 const { uploadMiddleware } = require("../utils/fileUpload");
-
-exports.FoodRoutes = (app, passport) => {
-    let nimesh = 'hey';
+const protectedMiddleware = require("../utils/ProtectedMiddleware");
+exports.FoodRoutes = (app) => {
     app.get("/food", FoodViewAll);
     app.get("/food/:fid", FoodViewOne);
-    app.post('/food', passport.authenticate("jwt", { session: false }), uploadMiddleware.single('foodImage'),
-        FoodAdd)
+    app.post('/food', protectedMiddleware, uploadMiddleware.single('foodImage'),
+        FoodAdd);
+    app.post('/food/:fid', protectedMiddleware, uploadMiddleware.single('foodImage'),
+        FoodUpdate);
 }

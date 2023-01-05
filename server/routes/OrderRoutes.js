@@ -1,9 +1,17 @@
-const { OrderViewAll, OrderViewbyOid, OrderViewbyUid, OrderAdd, statusChange } = require("../controller/OrderController")
+const { OrderViewAll, OrderViewbyOid, OrderViewbyUid, OrderAdd, statusChange, updateOrder } = require("../controller/OrderController")
+const protectedMiddleware = require("../utils/ProtectedMiddleware")
 
-exports.OrderRoutes = (app, passport) => {
-    app.get("/order", passport.authenticate("jwt", { session: false }), OrderViewAll)
-        .get("/order/:oid", passport.authenticate("jwt", { session: false }), OrderViewbyOid)
-        .get("/order/user/:uid", passport.authenticate("jwt", { session: false }), OrderViewbyUid)
-        .post("/order", passport.authenticate("jwt", { session: false }), OrderAdd)
-        .post("/order/status", passport.authenticate("jwt", { session: false }), statusChange)
+exports.OrderRoutes = (app) => {
+    app.get("/order", protectedMiddleware,
+        OrderViewAll)
+        .get("/order/:oid", protectedMiddleware,
+            OrderViewbyOid)
+        .get("/order/user/:uid", protectedMiddleware,
+            OrderViewbyUid)
+        .post("/order", protectedMiddleware,
+            OrderAdd)
+        .post("/order/status", protectedMiddleware,
+            statusChange)
+        .post("/order/:oid", protectedMiddleware,
+            updateOrder)
 }

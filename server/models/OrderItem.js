@@ -21,6 +21,11 @@ const OrderItemTable = db.define("order_Item_table",
             type: DataTypes.INTEGER,
             allowNull: false,
         },
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        }
 
     }
     , { freezeTableName: true, timestamps: true });

@@ -1,9 +1,11 @@
-const { getOrderItems } = require("../services/OrderService");
+const { getOrderItemsbyOid, getBillbyOid } = require("../repository/order-repo");
+// const { getOrderItems } = require("../services/OrderService");
 const { auth } = require("../utils/Auth");
+const jwt = require("jsonwebtoken");
 
 exports.getBill = async (req, res, next) => {
     const oid = req.params.bid;
-    let rawOrder = await getOrderItems(oid);
+    let [rawOrder] = await getBillbyOid(oid);
     // console.log(rawOrder)
     if (rawOrder.length === 0) {
         return res.status(200).json({ message: "no Items Found" })
@@ -21,20 +23,22 @@ exports.getBill = async (req, res, next) => {
     let orderDetails = {
         orderId: rawOrder[0].orderId,
         uid: rawOrder[0].uid,
-        TotalPrice: rawOrder[0].total_price,
+        TotalPrice: 0,
         Created: rawOrder[0].createdAt,
         items: []
     };
     rawOrder.forEach((item) => {
         let filter = {
-            foodName: item.name,
+            foodName: item.productname,
             quantity: item.quantity,
             price: item.price,
             totalPrice: item.price * item.quantity,
             image: item.image
         }
+        orderDetails.TotalPrice += filter.totalPrice;
         orderDetails.items.push(filter);
     })
     console.log(orderDetails);
     res.status(200).json(orderDetails);
 }
+

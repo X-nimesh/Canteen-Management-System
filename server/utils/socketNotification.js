@@ -24,8 +24,9 @@ exports.socket = (app) => {
         socket.emit("join", "hello from server");
 
         // it recieves message from client in "message" event
-        socket.on("message", (data) => {
+        socket.on("food", (data) => {
             console.log(data);
+            //food service =>               
         });
         socket.on("disconnect", () => {
             console.log("user disconnected");

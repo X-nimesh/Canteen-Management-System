@@ -13,9 +13,13 @@ const bcrypt = require('bcrypt');
 const userSchema = require('../validator/userValidator');
 const { findAllUser } = require('../services/UserService');
 const userTable = require('../models/UserTable');
+const { auth } = require('../utils/Auth');
 require('dotenv').config({ path: './.dev.env' });
 exports.usergetAll = async (req, res, next) => {
     try {
+        if (!auth(req, res)) {
+            return
+        }
         const users = await findAllUser();
         return res.status(200).json({ users });
     } catch (error) {

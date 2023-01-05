@@ -7,10 +7,10 @@ exports.authenticate = (passport) => {
     passport.use(
         new LocalStrategy({ usernameField: "email" }, async (email, password, cb) => {
 
-            const found = await UserLogin(email);
-
-            if (found.length && bcrypt.compareSync(password, found[0].password)) {
-                let data = { uid: found[0].uid, role: found[0].role }
+            const found = await UserLogin(email, password);
+            let passCheck = bcrypt.compareSync(password, found.password);
+            if (!(Object.keys(found).length === 0) && bcrypt.compareSync(password, found.password)) {
+                let data = { uid: found.uid, role: found.role }
 
                 return cb(null, data, {
                     // return cb(null, found.dataValues.uid, {
