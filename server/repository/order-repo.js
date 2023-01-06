@@ -4,6 +4,7 @@ const { db } = require("../config/db_config");
 
 exports.getOrderStatus = async (oid) => {
     return await db.query(`Select status from order_table where "orderId"=${oid}`);
+
 }
 
 exports.orderStatusChange = async (oid, status) => {
@@ -25,11 +26,16 @@ exports.getorderItemsbyUidandFid = async (uid, item) => {
     return await db.query(`SELECT oit.id as orderItemId, 
  quantity,"Fid" FROM "order_Item_table" oit JOIN order_table ot
  on ot."orderId" = oit."orderId" 
- WHERE ot.uid=${uid} AND oit."Fid"=${item.fid}`);
+ WHERE ot.uid=:uid AND oit."Fid"=:fid`,
+        { replacements: { uid: uid, fid: item.fid } });
 }
 exports.getBillbyOid = async (oid) => {
-    return await db.query(`SELECT  Ot."orderId",uid,total_price, name as productName, price,image,oIt.quantity,status,oT."createdAt" FROM order_table oT  JOIN
+    let [bill] = await db.query(`SELECT  Ot."orderId",uid,total_price, name as productName, price,image,oIt.quantity,status,oT."createdAt" FROM order_table oT  JOIN
     "order_Item_table" oIt on oT."orderId" = oIt."orderId"
           JOIN "foodMenu" fM on oIt."Fid" = fM."Fid"
-    where oT.uid=${oid} `);
+    where oIt."orderId"=:oid `,
+        {
+            replacements: { oid: oid }
+        });
+    return bill;
 }

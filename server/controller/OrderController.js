@@ -18,8 +18,8 @@ const { db } = require('../config/db_config');
 const { FoodMenu } = require('../models/FoodMenu');
 const { FoodDecrease } = require('../services/FoodService');
 const Joi = require('joi');
-const { statusChange } = require('../validator/orderValidator');
-const { getAllOrder, GetOrderDetailsByOID, GetOrderDetailsByUID, addOrder, addDuplicateItems, cancelOrder, updateStatus, getUIdofOrder } = require('../services/OrderService');
+const { statusChange, statusChangeByUser } = require('../validator/orderValidator');
+const { getAllOrder, GetOrderDetailsByOID, GetOrderDetailsByUID, addOrder, addDuplicateItems, cancelOrder, updateStatus, getUIdofOrder, CheckItemAvailable, updateOrderItem } = require('../services/OrderService');
 exports.OrderViewAll = async (req, res, next) => {
     try {
         if (!auth(req, res)) {
@@ -34,9 +34,15 @@ exports.OrderViewAll = async (req, res, next) => {
     }
 }
 exports.OrderViewbyOid = async (req, res, next) => {
+    let userDet = jwt.verify(req.headers.authorization.split(" ")[1], process.env.SECRET_KEY);
+
     try {
-        if (!auth(req, res)) {
-            return
+        let orderUid = await getUIdofOrder(req.params.oid);
+        if (userDet.uid != orderUid.uid) {
+
+            if (!auth(req, res)) {
+                return
+            }
         }
         const orders = await GetOrderDetailsByOID(req.params.oid);
         // const orders = await OrderTable.findAll({
@@ -53,11 +59,9 @@ exports.OrderViewbyOid = async (req, res, next) => {
 exports.OrderViewbyUid = async (req, res, next) => {
     try {
         let userDet = jwt.verify(req.headers.authorization.split(" ")[1], process.env.SECRET_KEY);
+        if (!auth(req, res))
+            return res.status(401).json({ message: "Unauthorized" });
 
-        if (req.params.uid != userDet.uid) {
-            if (!auth(req, res))
-                return res.status(401).json({ message: "Unauthorized" });
-        }
         const orders = await GetOrderDetailsByUID(req.params.uid);
         // const orders = await OrderTable.findAll({
         //     where: {
@@ -70,21 +74,21 @@ exports.OrderViewbyUid = async (req, res, next) => {
         next(err)
     }
 }
+exports.viewUserOrder = async (req, res, next) => {
+    console.log('hey from')
+    try {
+        let userDet = jwt.verify(req.headers.authorization.split(" ")[1], process.env.SECRET_KEY);
+        const orders = await GetOrderDetailsByUID(userDet.uid);
+        return res.status(200).json(orders);
+    }
+    catch (err) {
+        next(err)
+    }
+}
+
 // function to filter duplicate items
 const filterItems = (orderItems) => {
-    // const filterOrderMap = new Map();
 
-    // orderItems.forEach((order) => {
-    //     const found = filterOrderMap.get('if');
-    //     if(found){
-    //         //oper
-    //         filterOrderMap.set(id) = //asdasl
-    //     }
-    //     else{
-    //         asdasd
-    //         //s
-    //     }
-    // })
 
     let filteredItem = orderItems.reduce((acc, current) => {
         const x = acc.find((item) => item.Fid === current.Fid);
@@ -100,7 +104,14 @@ const filterItems = (orderItems) => {
 exports.OrderAdd = async (req, res, next) => {
     try {
         let userDet = jwt.verify(req.headers.authorization.split(" ")[1], process.env.SECRET_KEY);
-
+        //check if item are avilable or not
+        let itemNotAvailable = await CheckItemAvailable(req.body.items);
+        if (itemNotAvailable.length > 0) {
+            return res.status(400).json({
+                message: "Item Not Available",
+                itemNotAvailable
+            });
+        }
         let totalprice = 0;
         req.body.items.forEach(element => {
             totalprice += parseInt(element.price * element.quantity);
@@ -110,17 +121,19 @@ exports.OrderAdd = async (req, res, next) => {
             total_price: totalprice,
             status: 'pending'
         }
-
         let orderItems = req.body.items;
         // filter orderItems
         let filterOrderItems = filterItems(orderItems);
         let itemstoadd = await addDuplicateItems(filterOrderItems, userDet.uid);
-
-        await addOrder(orderReq, orderItems);
-
+        if (itemstoadd.length == 0) {
+            return res.status(400).json({
+                message: "Item added to previous order"
+            });
+        }
+        let order = await addOrder(orderReq, itemstoadd);
         return res.status(201).json({
             message: "Order Placed",
-            itemstoadd
+            order
         });
     }
     catch (err) {
@@ -138,7 +151,7 @@ exports.statusChange = async (req, res, next) => {
     let { status, oid } = req.body;
     let userDet = jwt.verify(req.headers.authorization.split(" ")[1], process.env.SECRET_KEY);
 
-    if (!auth(req, res)) {
+    if (!(await auth(req, res))) {
         return
     }
     try {
@@ -173,21 +186,72 @@ exports.statusChange = async (req, res, next) => {
         next(err)
     }
 }
+exports.statusChangeByUser = async (req, res, next) => {
+    let { status, oid } = req.body;
+    let userDet = jwt.verify(req.headers.authorization.split(" ")[1], process.env.SECRET_KEY);
+
+    try {
+        await statusChangeByUser.validateAsync({ status, oid });
+        let oidDb = await getUIdofOrder(oid);
+        if (userDet.uid != oidDb.uid) {
+            return res.status(401).json({
+                oid: oid,
+                message: `Unauthorized`
+            });
+        }
+        if (status == 'cancelled') {
+            let dbstatus = await cancelOrder(oid, status);
+            if (!dbstatus.status) {
+                return res.status(200).json({
+                    oid: oid,
+                    message: dbstatus.error
+                });
+            }
+            return res.status(200).json({
+                oid: oid,
+                message: `Order ${status}`
+            });
+
+        }
+        res.status(200).json({
+            oid: oid,
+            message: `Status Updated to ${status}`
+        });
+    }
+    catch (err) {
+        next(err)
+    }
+}
 exports.updateOrder = async (req, res, next) => {
     try {
         const userDet = jwt.verify(req.headers.authorization.split(" ")[1], process.env.SECRET_KEY);
         const UidofOrder = await getUIdofOrder(req.params.oid);
-        let authorized = true;
-
-        if (!(userDet.uid === UidofOrder)) {
+        // check if userId is same as orders uid
+        if (!(userDet.uid === UidofOrder.uid)) {
+            // if not same then check if user is admin or employee
             if (!(await auth(req, res))) {
-                authorized = false;
+                return
             }
         }
-        if (authorized)
+        // check if item are avilable or not
+        let itemNotAvailable = await CheckItemAvailable(req.body.itemsToadd);
+        if (itemNotAvailable.length > 0) {
+            return res.status(400).json({
+                message: "Item Not Available",
+                itemNotAvailable
+            });
+        }
+        let orderDetails = await updateOrderItem(req.params.oid, req.body.itemsToadd);
+
+        if (orderDetails?.status) {
             return res.status(200).json({
-                message: "noicee"
+                message: "Order Updated",
             })
+        }
+        return res.status(400).json({
+            message: orderDetails.error
+        });
+
     }
     catch (err) {
         next(err)

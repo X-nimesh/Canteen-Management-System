@@ -9,4 +9,8 @@ const statusChange = Joi.object({
     status: Joi.string().required().valid("pending", "complete", "cancelled", "rejected", "accepted"),
     oid: Joi.number().required()
 });
-module.exports = { signup, statusChange };
+const statusChangeByUser = Joi.object({
+    status: Joi.string().required().valid("cancelled"),
+    oid: Joi.number().required()
+});
+module.exports = { signup, statusChange, statusChangeByUser };
